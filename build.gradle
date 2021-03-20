@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+}
+
+group 'otomir23.connect'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+task buildServerJar (type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'otomir23.connect.server.Server'
+    }
+    archiveName = 'Connect-Server-' + version + '.jar'
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+}
+task buildClientJar (type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'otomir23.connect.client.Client'
+    }
+    archiveName = 'Connect-Client-' + version + '.jar'
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+}
+
+task buildAllJars  {
+    dependsOn(buildServerJar, buildClientJar)
+}
+
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
