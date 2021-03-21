@@ -41,9 +41,7 @@ public class PropertiesReader {
             if (property.length != 2) {
                 continue;
             }
-            if (property[1].charAt(0) == ' ') {
-                property[1] = new StringBuilder(property[1]).deleteCharAt(0).toString();
-            }
+            property[1] = property[1].replaceAll("\\s+", "");
             if(property[0].equalsIgnoreCase(key)) defaultValue = property[1];
         }
 
@@ -67,9 +65,7 @@ public class PropertiesReader {
                         if (property.length != 2) {
                             continue;
                         }
-                        if (property[1].charAt(0) == ' ') {
-                            property[1] = new StringBuilder(property[1]).deleteCharAt(0).toString();
-                        }
+                        property[1] = property[1].replaceAll("\\s+", "");
                         properties.put(property[0], property[1]);
                     }
 

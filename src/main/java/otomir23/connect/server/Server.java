@@ -41,12 +41,9 @@ public class Server {
                 properties.getProperty("debug")
         ));
         String portValue = properties.getProperty("port");
-        portValue = "26008"; //TODO
-        LOGGER.log(portValue);
 
         int port = Integer.parseInt(portValue);
-        //int maxConnections = Integer.parseInt(properties.getProperty("max"));
-        int maxConnections = 12; //TODO
+        int maxConnections = Integer.parseInt(properties.getProperty("max"));
 
         clients = new ArrayList<>();
         try {
