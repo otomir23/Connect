@@ -63,9 +63,7 @@ public class Server {
                         thread.start();
                         c.thread = thread;
                         clients.add(c);
-                    } catch (IOException e) {
-                        //LOGGER.error(e);
-                        //I'm gonna fucking ignore exceptions
+                    } catch (IOException ignored) {
                     }
                 }
             });
