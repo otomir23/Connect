@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class Server {
-    public static Server instance;
+    public volatile static Server instance;
     private static Thread handler;
     private static volatile boolean running = true;
     private static boolean stopping = true;
@@ -28,7 +28,7 @@ public class Server {
         handler.start();
     }
 
-    private ArrayList<Client> clients;
+    private volatile ArrayList<Client> clients;
     private PropertiesReader properties;
     private final static Logger LOGGER = new Logger("Server");
     private ServerSocket serverSocket;
@@ -41,10 +41,12 @@ public class Server {
                 properties.getProperty("debug")
         ));
         String portValue = properties.getProperty("port");
+        portValue = "26008"; //TODO
         LOGGER.log(portValue);
 
         int port = Integer.parseInt(portValue);
-        int maxConnections = Integer.parseInt(properties.getProperty("max"));
+        //int maxConnections = Integer.parseInt(properties.getProperty("max"));
+        int maxConnections = 12; //TODO
 
         clients = new ArrayList<>();
         try {
@@ -194,8 +196,9 @@ public class Server {
             }
         }
 
-        void sendPacket(String key, String value) {
-
+        void sendPacket(String key, String value) throws IOException {
+            clientSocket.getOutputStream().write((key + ":" + value + "\n").getBytes());
+            clientSocket.getOutputStream().flush();
         }
 
         static Pair<String,String> parseInput(String input) {

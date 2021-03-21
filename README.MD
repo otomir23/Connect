@@ -12,6 +12,10 @@ Information
 
 To-do
 ------------
-- Fix server crash
+- ~~Fix server crash~~
+- Make server.properties work  
 - Rewrite Client code
 - Rewrite Server code 
+- Make client-side packet parsing and response
+- Add ban/kick system
+- Fix ping calculation
