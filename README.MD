@@ -2,6 +2,8 @@ Connect
 =============
 > Made by otomir23
 
+[![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
+
 Bad socket application (very very bad)
 
 Information
@@ -12,10 +14,10 @@ Information
 
 To-do
 ------------
-- ~~Fix server crash~~
-- ~~Make server.properties work~~
-- Rewrite Client code
-- Rewrite Server code
-- Make client-side packet parsing and response
-- Add ban/kick system
-- Fix ping calculation
+- [x] Fix server crash
+- [x] Make server.properties work
+- [ ] Rewrite Client code
+- [ ] Rewrite Server code
+- [ ] Make client-side packet parsing and response
+- [ ] Add ban/kick system
+- [ ] Fix ping calculation
