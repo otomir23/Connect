@@ -1,9 +1,7 @@
 package otomir23.connect.server.util;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Scanner;
+import java.util.*;
 
 public class PropertiesManager {
     private HashMap<String, String> properties;
@@ -40,20 +38,19 @@ public class PropertiesManager {
     }
 
     private HashMap<String, String> readPropertiesFile(File propertiesFile) {
+        HashMap<String, String> properties = new HashMap<>();
         try {
-            HashMap<String, String> properties = new HashMap<>();
             if (propertiesFile.exists()) {
                 if (propertiesFile.isFile()) {
                     Scanner sc = new Scanner(propertiesFile);
-                    String propertiesFileContent = "";
+                    ArrayList<String> propertiesFileContent = new ArrayList<>();
                     while (sc.hasNextLine()) {
-                        propertiesFileContent += sc.nextLine();
+                        propertiesFileContent.add(sc.nextLine());
                     }
 
-                    String[] propertiesFileContent1 = propertiesFileContent.split("\n");
-
-                    for (String line : propertiesFileContent1) {
+                    for (String line : propertiesFileContent) {
                         String[] property = line.split(":");
+
                         if (property.length != 2) {
                             continue;
                         }
@@ -84,10 +81,9 @@ public class PropertiesManager {
 
                 return readPropertiesFile(propertiesFile);
             }
-            return properties;
         } catch (IOException ioe) {
             LOGGER.fatal(ioe.getLocalizedMessage(), -1);
         }
-        return new HashMap<>();
+        return properties;
     }
 }
