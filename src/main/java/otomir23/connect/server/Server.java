@@ -1,10 +1,13 @@
 package otomir23.connect.server;
 
+import otomir23.connect.server.util.Logger;
+import otomir23.connect.server.util.Pair;
+import otomir23.connect.server.util.PropertiesManager;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Server {
@@ -29,14 +32,14 @@ public class Server {
     }
 
     private volatile ArrayList<Client> clients;
-    private PropertiesReader properties;
+    private PropertiesManager properties;
     private final static Logger LOGGER = new Logger("Server");
     private ServerSocket serverSocket;
     private Thread connectionHandler;
     private Thread inputHandler;
 
     Server() {
-        properties = new PropertiesReader(new File("./server.properties"));
+        properties = new PropertiesManager(new File("./server.properties"));
         Logger.setDebug(Boolean.parseBoolean(
                 properties.getProperty("debug")
         ));

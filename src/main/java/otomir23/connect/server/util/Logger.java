@@ -1,4 +1,4 @@
-package otomir23.connect.server;
+package otomir23.connect.server.util;
 
 import java.util.Date;
 
@@ -7,7 +7,7 @@ public class Logger {
 
     public String name;
 
-    Logger(String name) {
+    public Logger(String name) {
         this.name = name;
     }
 

@@ -1,4 +1,4 @@
-package otomir23.connect.server;
+package otomir23.connect.server.util;
 
 public class Pair<K,V> {
 

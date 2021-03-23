@@ -1,22 +1,20 @@
-package otomir23.connect.server;
+package otomir23.connect.server.util;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class PropertiesReader {
+public class PropertiesManager {
     private HashMap<String, String> properties;
     private static final Logger LOGGER = new Logger("PropertiesReader");
 
-    PropertiesReader(File propertiesFile) {
+    public PropertiesManager(File propertiesFile) {
         properties = new HashMap<>();
         readPropertiesFile(propertiesFile);
     }
 
     public String getProperty(String key) {
-        InputStream lang = PropertiesReader.class.getResourceAsStream("/server.properties");
+        InputStream lang = PropertiesManager.class.getResourceAsStream("/server.properties");
         String s = "";
         String defaultValue = "";
         try {
@@ -77,7 +75,7 @@ public class PropertiesReader {
                 LOGGER.warn("Properties file does not exists. Creating a new one.");
                 propertiesFile.createNewFile();
 
-                InputStream lang = PropertiesReader.class.getResourceAsStream("/server.properties");
+                InputStream lang = PropertiesManager.class.getResourceAsStream("/server.properties");
                 try {
                     FileOutputStream fos = new FileOutputStream(propertiesFile);
                     byte[] buff = new byte[65536];
