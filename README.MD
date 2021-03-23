@@ -22,3 +22,4 @@ To-do
 - [ ] Add ban system
 - [x] Add kick system
 - [x] Fix ping calculation
+- [ ] Fix stop/restart command
