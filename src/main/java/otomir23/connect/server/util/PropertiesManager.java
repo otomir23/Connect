@@ -2,6 +2,7 @@ package otomir23.connect.server.util;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Scanner;
 
 public class PropertiesManager {
@@ -10,44 +11,37 @@ public class PropertiesManager {
 
     public PropertiesManager(File propertiesFile) {
         properties = new HashMap<>();
-        readPropertiesFile(propertiesFile);
+        properties = readPropertiesFile(propertiesFile);
     }
 
     public String getProperty(String key) {
-        InputStream lang = PropertiesManager.class.getResourceAsStream("/server.properties");
-        String s = "";
-        String defaultValue = "";
+        String defaultValue = null;
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            File temp = File.createTempFile("", "");
+            InputStream resource = PropertiesManager.class.getResourceAsStream("/server.properties");
+
+            FileOutputStream fos = new FileOutputStream(temp);
             byte[] buff = new byte[65536];
             int n;
-            while ((n = lang.read(buff)) > 0) {
-                baos.write(buff, 0, n);
-                baos.flush();
+            while ((n = resource.read(buff)) > 0) {
+                fos.write(buff, 0, n);
+                fos.flush();
             }
-            baos.close();
+            fos.close();
             buff = null;
-            s = baos.toString();
-        } catch (Exception e) {
+
+            HashMap<String, String> defaults = readPropertiesFile(temp);
+            defaultValue = defaults.getOrDefault(key, null);
+        } catch (IOException e) {
             LOGGER.fatal(e, -1);
-        }
-
-        String[] propertiesFileContent1 = s.split("\n");
-
-        for (String line : propertiesFileContent1) {
-            String[] property = line.split(":");
-            if (property.length != 2) {
-                continue;
-            }
-            property[1] = property[1].replaceAll("\\s+", "");
-            if(property[0].equalsIgnoreCase(key)) defaultValue = property[1];
         }
 
         return properties.getOrDefault(key, defaultValue);
     }
 
-    private void readPropertiesFile(File propertiesFile) {
+    private HashMap<String, String> readPropertiesFile(File propertiesFile) {
         try {
+            HashMap<String, String> properties = new HashMap<>();
             if (propertiesFile.exists()) {
                 if (propertiesFile.isFile()) {
                     Scanner sc = new Scanner(propertiesFile);
@@ -63,7 +57,7 @@ public class PropertiesManager {
                         if (property.length != 2) {
                             continue;
                         }
-                        property[1] = property[1].replaceAll("\\s+", "");
+                        property[1] = property[1].replaceAll(" ", "");
                         properties.put(property[0], property[1]);
                     }
 
@@ -75,12 +69,12 @@ public class PropertiesManager {
                 LOGGER.warn("Properties file does not exists. Creating a new one.");
                 propertiesFile.createNewFile();
 
-                InputStream lang = PropertiesManager.class.getResourceAsStream("/server.properties");
+                InputStream resource = PropertiesManager.class.getResourceAsStream("/server.properties");
                 try {
                     FileOutputStream fos = new FileOutputStream(propertiesFile);
                     byte[] buff = new byte[65536];
                     int n;
-                    while ((n = lang.read(buff)) > 0) {
+                    while ((n = resource.read(buff)) > 0) {
                         fos.write(buff, 0, n);
                         fos.flush();
                     }
@@ -90,10 +84,12 @@ public class PropertiesManager {
                     LOGGER.fatal(e, -1);
                 }
 
-                readPropertiesFile(propertiesFile);
+                return readPropertiesFile(propertiesFile);
             }
+            return properties;
         } catch (IOException ioe) {
             LOGGER.fatal(ioe.getLocalizedMessage(), -1);
         }
+        return new HashMap<>();
     }
 }
