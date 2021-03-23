@@ -1,7 +1,6 @@
 package otomir23.connect.server;
 
 import otomir23.connect.server.util.Logger;
-import otomir23.connect.server.util.Pair;
 import otomir23.connect.server.util.PropertiesManager;
 
 import java.io.*;
@@ -12,6 +11,7 @@ import java.util.Scanner;
 
 public class Server {
     public volatile static Server instance;
+    public final static Logger LOGGER = new Logger("Server");
     private static Thread handler;
     private static volatile boolean running = true;
     private static boolean stopping = true;
@@ -31,9 +31,8 @@ public class Server {
         handler.start();
     }
 
-    private volatile ArrayList<Client> clients;
+    private volatile ArrayList<User> users;
     private PropertiesManager properties;
-    private final static Logger LOGGER = new Logger("Server");
     private ServerSocket serverSocket;
     private Thread connectionHandler;
     private Thread inputHandler;
@@ -48,7 +47,7 @@ public class Server {
         int port = Integer.parseInt(portValue);
         int maxConnections = Integer.parseInt(properties.getProperty("max"));
 
-        clients = new ArrayList<>();
+        users = new ArrayList<>();
         try {
             serverSocket = new ServerSocket(port);
             LOGGER.log("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":" + serverSocket.getLocalPort());
@@ -57,15 +56,15 @@ public class Server {
                 while (true) {
                     try {
                         while (true) {
-                            if (clients.size() < maxConnections) break;
+                            if (users.size() < maxConnections) break;
                         }
                         Socket socket = serverSocket.accept();
                         LOGGER.debug("Got new connection from " + socket.getInetAddress().getHostAddress());
-                        Client c = new Client(socket);
+                        User c = new User(socket);
                         Thread thread = new Thread(c);
                         thread.start();
                         c.thread = thread;
-                        clients.add(c);
+                        users.add(c);
                     } catch (IOException ignored) {
                     }
                 }
@@ -111,9 +110,9 @@ public class Server {
             LOGGER.debug("Connection thread is shut down");
 
             LOGGER.debug("Shutting down all client interaction threads...");
-            for (Client c:
-                 clients) {
-                LOGGER.debug("Shutting down " + c.username + " interaction thread...");
+            for (User c:
+                    users) {
+                LOGGER.debug("Shutting down " + c.getUsername() + " interaction thread...");
                 c.thread.stop();
             }
             LOGGER.debug("All client interaction threads are shut down");
@@ -133,76 +132,12 @@ public class Server {
         }
     }
 
-    public static class Client implements Runnable {
-        private Socket clientSocket;
-        private boolean connectionConfirmed = false;
-        private String username = "_";
-        private Logger LOGGER;
-        public Thread thread;
+    public ArrayList<User> getConnectedUsers() {
+        return new ArrayList<>(users);
+    }
 
-        public Client(Socket clientSocket) {
-            this.clientSocket = clientSocket;
-            LOGGER = Server.LOGGER;
-
-            new Thread(() -> {
-                while (true)
-                if (clientSocket.isClosed()) {
-                    LOGGER.log(username + " disconnected.");
-                    Server.instance.clients.remove(this);
-                    thread.stop();
-                    Thread.currentThread().stop();
-                }
-            }).start();
-        }
-
-        @Override
-        public void run() {
-            try {
-                Scanner scanner = new Scanner(clientSocket.getInputStream());
-                while (scanner.hasNextLine()) {
-                    String message = scanner.nextLine();
-                    LOGGER.debug("New message: " + message);
-                    Pair<String, String> input = parseInput(message);
-                    if (input.getKey().equals("connection")) {
-                        if (!connectionConfirmed) {
-                            username = input.getValue();
-                            LOGGER.log(username + " connected. [" + clientSocket.getInetAddress().getHostAddress() + "]");
-                            connectionConfirmed = true;
-                        } else {
-                            LOGGER.warn(username + " is already connected, but sends connect packet again.");
-                        }
-                    } else if (connectionConfirmed) {
-                        switch (input.getKey()) {
-                            case "ping":
-                                long ping = System.currentTimeMillis() - Long.parseLong( input.getValue() );
-                                LOGGER.debug(username + "'s ping is " + ping + " ms");
-                                sendPacket("pong", String.valueOf(ping));
-                                break;
-                            case "penis":
-                                break;
-                            default:
-                                throw new IllegalStateException("Unexpected value: " + input.getKey());
-                        }
-                    }
-                    clientSocket.getOutputStream().flush();
-                }
-                clientSocket.close();
-            } catch (IOException e) {
-                // do nothing
-            } catch (Exception e) {
-                LOGGER.error(e);
-            }
-        }
-
-        void sendPacket(String key, String value) throws IOException {
-            clientSocket.getOutputStream().write((key + ":" + value + "\n").getBytes());
-            clientSocket.getOutputStream().flush();
-        }
-
-        static Pair<String,String> parseInput(String input) {
-            String[] inputString = input.split(":");
-            if (inputString.length != 2) throw new IllegalArgumentException("Invalid input string.");
-            return new Pair<>(inputString[0], inputString[1]);
-        }
+    public void disconnectUser(User user) throws IOException {
+        if (!user.getClientSocket().isClosed()) user.getClientSocket().close();
+        users.remove(this);
     }
 }
