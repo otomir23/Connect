@@ -10,8 +10,8 @@ public class PropertiesManager {
     private static final Logger LOGGER = new Logger("PropertiesReader");
 
     public PropertiesManager(File propertiesFile) {
-        properties = new HashMap<>();
         properties = readPropertiesFile(propertiesFile);
+        LOGGER.log("Properties initialized.");
     }
 
     public String getProperty(String key) {
@@ -60,8 +60,6 @@ public class PropertiesManager {
                         property[1] = property[1].replaceAll(" ", "");
                         properties.put(property[0], property[1]);
                     }
-
-                    LOGGER.log("Properties initialized.");
                 } else {
                     LOGGER.error("Invalid properties file/path!");
                 }
