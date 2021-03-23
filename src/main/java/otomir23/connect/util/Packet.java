@@ -1,11 +1,11 @@
-package otomir23.connect.server.util;
+package otomir23.connect.util;
 
-public class Pair<K,V> {
+public class Packet<K,V> {
 
     private final K key;
     private final V value;
 
-    public Pair(K key, V value) {
+    public Packet(K key, V value) {
         this.key = key;
         this.value = value;
     }
@@ -18,8 +18,8 @@ public class Pair<K,V> {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Pair)) return false;
-        Pair pairo = (Pair) o;
+        if (!(o instanceof Packet)) return false;
+        Packet pairo = (Packet) o;
         return this.key.equals(pairo.getKey()) &&
                 this.value.equals(pairo.getValue());
     }

@@ -1,14 +1,16 @@
 package otomir23.connect.client;
 
+import otomir23.connect.util.Packet;
+
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Client {
     public static final int PING_RATE = 1;
 
     public static String username = "Dev";
+    public static long pingMills = 0;
 
     public static void main(String[] args) {
         while (true) {
@@ -48,19 +50,60 @@ public class Client {
                 @Override
                 public void run() {
                     try {
-                        sendPacket(socket.getOutputStream(), "ping", String.valueOf(System.currentTimeMillis()) );
+                        pingMills = System.currentTimeMillis();
+                        sendPacket(socket.getOutputStream(), "ping", String.valueOf(pingMills) );
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             }, 0, PING_RATE * 60 * 1000);
 
-            // ========= START =========
-            while (true) {
-                if (new Scanner(System.in).next().equals("stop")) {
-                    if (!socket.isClosed()) socket.close();
-                    break;
+            // ========= INPUT THREAD =========
+            new Thread(() -> {
+                while (true) {
+                    if (new Scanner(System.in).next().equals("stop")) {
+                        if (!socket.isClosed()) {
+                            try {
+                                socket.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                 }
+            }).start();
+
+            // ========= PACKET THREAD =========
+            new Thread(() -> {
+                try {
+                    Scanner scanner = new Scanner(socket.getInputStream());
+                    while (scanner.hasNextLine()) {
+                        String message = scanner.nextLine();
+                        Packet<String, String> input = parseInput(message);
+                            switch (input.getKey()) {
+                                case "pong":
+                                    long ping = System.currentTimeMillis() - pingMills;
+                                    System.out.println("Your ping is " + ping);
+                                    break;
+                                case "disconnect":
+                                    socket.close();
+                                    System.out.println("Disconnected. Reason: " + input.getValue());
+                                    break;
+                                default:
+                                    throw new IllegalStateException("Unexpected value: " + input.getKey());
+                            }
+                        socket.getOutputStream().flush();
+                    }
+                } catch (IOException e) {
+                    // do nothing
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
+            // ========= START =========
+            while (!socket.isClosed()) {
+
             }
         } catch (SocketException se) {
             System.err.println("Unable to connect to the server. Maybe IP is invalid, server is down, or you don't have internet connection.");
@@ -113,5 +156,11 @@ public class Client {
     static void sendPacket(OutputStream out, String key, String value) throws IOException {
         out.write((key + ":" + value + "\n").getBytes());
         out.flush();
+    }
+
+    private static Packet<String, String> parseInput(String input) {
+        String[] inputString = input.split(":");
+        if (inputString.length != 2) throw new IllegalArgumentException("Invalid input string.");
+        return new Packet<>(inputString[0], inputString[1]);
     }
 }

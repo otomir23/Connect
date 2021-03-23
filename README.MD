@@ -18,6 +18,7 @@ To-do
 - [x] Make server.properties work
 - [ ] Rewrite Client code
 - [ ] Rewrite Server code
-- [ ] Make client-side packet parsing and response
-- [ ] Add ban/kick system
-- [ ] Fix ping calculation
+- [x] Make client-side packet parsing and response
+- [ ] Add ban system
+- [x] Add kick system
+- [x] Fix ping calculation

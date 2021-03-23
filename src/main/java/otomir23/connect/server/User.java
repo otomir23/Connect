@@ -1,7 +1,7 @@
 package otomir23.connect.server;
 
 import otomir23.connect.server.util.Logger;
-import otomir23.connect.server.util.Pair;
+import otomir23.connect.util.Packet;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -13,24 +13,20 @@ public class User implements Runnable {
     private String username = "_";
     private Logger LOGGER;
     public Thread thread;
+    public Thread connectionThread;
 
     public User(Socket clientSocket) {
         this.clientSocket = clientSocket;
         LOGGER = Server.LOGGER;
 
-        new Thread(() -> {
+        connectionThread = new Thread(() -> {
             while (true)
                 if (clientSocket.isClosed()) {
-                    LOGGER.log(username + " disconnected.");
-                    try {
-                        Server.instance.disconnectUser(this);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    thread.stop();
-                    Thread.currentThread().stop();
+                    disconnect();
+                    break;
                 }
-        }).start();
+        });
+        connectionThread.start();
     }
 
     @Override
@@ -40,7 +36,7 @@ public class User implements Runnable {
             while (scanner.hasNextLine()) {
                 String message = scanner.nextLine();
                 LOGGER.debug("New message: " + message);
-                Pair<String, String> input = parseInput(message);
+                Packet<String, String> input = parseInput(message);
                 if (input.getKey().equals("connection")) {
                     if (!connectionConfirmed) {
                         username = input.getValue();
@@ -53,10 +49,10 @@ public class User implements Runnable {
                     switch (input.getKey()) {
                         case "ping":
                             long ping = System.currentTimeMillis() - Long.parseLong(input.getValue());
-                            LOGGER.debug(username + "'s ping is " + ping + " ms");
                             sendPacket("pong", String.valueOf(ping));
                             break;
-                        case "penis":
+                        case "disconnect":
+                            disconnect(input.getValue());
                             break;
                         default:
                             throw new IllegalStateException("Unexpected value: " + input.getKey());
@@ -72,7 +68,26 @@ public class User implements Runnable {
         }
     }
 
-    void sendPacket(String key, String value) throws IOException {
+    public void disconnect() {
+        disconnect("Disconnected");
+    }
+
+    public void disconnect(String reason) {
+        try {
+            if (!getClientSocket().isClosed()) {
+                sendPacket("disconnect", reason);
+                getClientSocket().close();
+            }
+            LOGGER.log(username + " disconnected. Reason: " + reason);
+            thread.stop();
+            connectionThread.stop();
+            Server.instance.getConnectedUsers().remove(this);
+        } catch (IOException ioe) {
+            LOGGER.fatal(ioe, -1);
+        }
+    }
+
+    public void sendPacket(String key, String value) throws IOException {
         clientSocket.getOutputStream().write((key + ":" + value + "\n").getBytes());
         clientSocket.getOutputStream().flush();
     }
@@ -85,10 +100,14 @@ public class User implements Runnable {
         return clientSocket;
     }
 
+    public boolean isConnectionConfirmed() {
+        return connectionConfirmed;
+    }
+
     //private useful methods
-    private static Pair<String, String> parseInput(String input) {
+    private static Packet<String, String> parseInput(String input) {
         String[] inputString = input.split(":");
         if (inputString.length != 2) throw new IllegalArgumentException("Invalid input string.");
-        return new Pair<>(inputString[0], inputString[1]);
+        return new Packet<>(inputString[0], inputString[1]);
     }
 }

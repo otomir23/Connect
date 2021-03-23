@@ -1,5 +1,10 @@
 package otomir23.connect.server;
 
+import otomir23.connect.server.commands.BanCommand;
+import otomir23.connect.server.commands.Command;
+import otomir23.connect.server.commands.CommandException;
+import otomir23.connect.server.commands.KickCommand;
+import otomir23.connect.server.util.BanManager;
 import otomir23.connect.server.util.Logger;
 import otomir23.connect.server.util.PropertiesManager;
 
@@ -7,6 +12,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Server {
@@ -15,19 +21,10 @@ public class Server {
     private static Thread handler;
     private static volatile boolean running = true;
     private static boolean stopping = true;
+    private final ArrayList<Command> serverCommands = new ArrayList<>();
 
     public static void main(String[] args) {
-        handler = new Thread(() -> {
-            while (true) {
-                running = true;
-                instance = new Server();
-                LOGGER.debug("vvv");
-                instance.stop();
-                if (stopping) {
-                    System.exit(0);
-                }
-            }
-        });
+        handler = new Thread(Server::run);
         handler.start();
     }
 
@@ -38,15 +35,23 @@ public class Server {
     private Thread inputHandler;
 
     Server() {
+        // PROPERTIES
         properties = new PropertiesManager(new File("./server.properties"));
         Logger.setDebug(Boolean.parseBoolean(
                 properties.getProperty("debug")
         ));
+        LOGGER.debug("DEBUG MODE IS ENABLED");
         String portValue = properties.getProperty("port");
 
         int port = Integer.parseInt(portValue);
         int maxConnections = Integer.parseInt(properties.getProperty("max"));
 
+
+        // COMMANDS
+        serverCommands.addAll(Arrays.asList(new BanCommand(),
+                new KickCommand()));
+
+        // SOCKET
         users = new ArrayList<>();
         try {
             serverSocket = new ServerSocket(port);
@@ -74,19 +79,38 @@ public class Server {
 
             inputHandler = new Thread(() -> {
                 Scanner input = new Scanner(System.in);
-                while (true) {
-                    if (input.hasNext()) {
-                        String command = input.next();
-                        if (command.equals("stop")) {
-                            LOGGER.log("Stopping server...");
-                            running = false;
-                            stopping = true;
-                        } else if (command.equals("restart")) {
-                            LOGGER.log("Server is restarting...");
-                            running = false;
-                        } else {
-                            LOGGER.log("Unknown command!");
+                while (input.hasNextLine()) {
+                    String inputText = input.nextLine();
+                    String[] split = inputText.split(" ");
+                    String command = split[0];
+                    String[] args = Arrays.copyOfRange(split, 1, split.length);
+                    LOGGER.debug("Executing command " + command + " With given args " + Arrays.toString(args));
+                    try {
+                        boolean flag = false;
+                        for (Command c:serverCommands) {
+                            boolean flag1 = false;
+                            for (String alias : c.getAliases()) {
+                                if (alias.equals(command)) {
+                                    flag1 = true;
+                                    break;
+                                }
+                            }
+                            if (c.getName().equals(command) || flag1) {
+                                flag = true;
+                                if (args.length <= c.getMaxArgs() && args.length >= c.getMinArgs())
+                                    c.execute(args);
+                                else if (args.length < c.getMinArgs())
+                                    LOGGER.log("Command " + c.getName() + " requires at least " + c.getMinArgs() + " arguments");
+                                else if (args.length > c.getMaxArgs())
+                                    LOGGER.log("Command " + c.getName() + " requires no more than " + c.getMaxArgs() + " arguments");
+                            }
+
                         }
+                        if (!flag) {
+                            LOGGER.log("Command not found");
+                        }
+                    } catch (CommandException e) {
+                        LOGGER.log("Command execution failed: " + e.getMessage());
                     }
                 }
             });
@@ -94,10 +118,22 @@ public class Server {
             connectionHandler.start();
             inputHandler.start();
 
-            while (running) {}
-
         } catch (IOException e) {
             LOGGER.fatal(e, -1);
+        }
+    }
+
+    private static void run() {
+        while (true) {
+            running = true;
+            instance = new Server();
+            while (running) {
+            }
+            LOGGER.debug("vvv");
+            instance.stop();
+            if (stopping) {
+                System.exit(0);
+            }
         }
     }
 
@@ -132,12 +168,32 @@ public class Server {
         }
     }
 
-    public ArrayList<User> getConnectedUsers() {
-        return new ArrayList<>(users);
+    public void onConsoleCommand(String command, String[] args) {
+        LOGGER.debug(command);
+        LOGGER.debug(Arrays.toString(args));
+        switch (command) {
+            case "stop":
+                LOGGER.log("Stopping server...");
+                running = false;
+                stopping = true;
+                break;
+            case "restart":
+                LOGGER.log("Server is restarting...");
+                running = false;
+                break;
+            default:
+                throw new CommandException("");
+        }
     }
 
-    public void disconnectUser(User user) throws IOException {
-        if (!user.getClientSocket().isClosed()) user.getClientSocket().close();
-        users.remove(this);
+    public User getUser(String username) {
+        for (User user : users) {
+            if (user.getUsername().equals(username)) return user;
+        }
+        return null;
+    }
+
+    public ArrayList<User> getConnectedUsers() {
+        return users;
     }
 }
