@@ -17,7 +17,7 @@ public class PropertiesManager {
     public String getProperty(String key) {
         String defaultValue = null;
         try {
-            File temp = File.createTempFile("", "");
+            File temp = File.createTempFile("resource", "temp");
             InputStream resource = PropertiesManager.class.getResourceAsStream("/server.properties");
 
             FileOutputStream fos = new FileOutputStream(temp);
