@@ -23,3 +23,5 @@ To-do
 - [x] Add kick system
 - [x] Fix ping calculation
 - [ ] Fix stop/restart command
+- [ ] Rewrite Packet class
+- [ ] Add help command
