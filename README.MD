@@ -19,7 +19,7 @@ To-do
 - [ ] Rewrite Client code
 - [ ] Rewrite Server code
 - [x] Make client-side packet parsing and response
-- [ ] Add ban system
+- [x] Add ban system
 - [x] Add kick system
 - [x] Fix ping calculation
 - [ ] Fix stop/restart command
