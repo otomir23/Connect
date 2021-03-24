@@ -17,7 +17,7 @@ public class BanCommand extends Command {
                 reason += s + " ";
             }
         }
-        if (user != null) BanManager.ban(user, reason);
+        if (user != null) Server.getInstance().ban(user, reason);
         else throw new CommandException("User not found");
     }
 

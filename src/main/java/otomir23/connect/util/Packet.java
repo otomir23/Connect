@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class Packet {
+    private static final String split = " => ";
 
     private final String key;
     private final String value;
 
     public static Packet parsePacket(String s) {
-        String[] inputString = s.split(":");
+        String[] inputString = s.split(split);
         if (inputString.length != 2) throw new IllegalArgumentException("Invalid input string.");
         return new Packet(inputString[0], inputString[1]);
     }
@@ -22,7 +23,7 @@ public class Packet {
     public String getValue() { return value; }
 
     public void send(OutputStream stream) throws IOException {
-        stream.write((key + ":" + value + "\n").getBytes());
+        stream.write((key + split + value + "\n").getBytes());
         stream.flush();
     }
 

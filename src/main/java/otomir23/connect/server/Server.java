@@ -43,8 +43,9 @@ public class Server {
     }
 
     private final ArrayList<Command> serverCommands = new ArrayList<>();
-    private final int maxConnections;
-    private final int port;
+    private int maxConnections;
+    private int port;
+    private BanManager banManager;
     private volatile ArrayList<User> users;
     private PropertiesManager properties;
     private ServerSocket serverSocket;
@@ -68,7 +69,9 @@ public class Server {
         serverCommands.addAll(Arrays.asList(new BanCommand(),
                 new KickCommand(),
                 new HelpCommand(),
-                new ListCommand()));
+                new ListCommand(),
+                new UnbanCommand()));
+        banManager = new BanManager();
 
         // SOCKET
         users = new ArrayList<>();
@@ -126,7 +129,7 @@ public class Server {
 
                         }
                         if (!flag) {
-                            LOGGER.log("Command not found");
+                            LOGGER.log("Command \"" + command + "\" not found");
                         }
                     } catch (CommandException e) {
                         LOGGER.log("Command execution failed: " + e.getMessage());
@@ -216,5 +219,21 @@ public class Server {
 
     public ArrayList<Command> getServerCommands() {
         return new ArrayList<>(serverCommands);
+    }
+
+    public void ban(User user) {
+        banManager.ban(user);
+    }
+
+    public void ban(User user, String reason) {
+        banManager.ban(user, reason);
+    }
+
+    public void unban(String username) {
+        banManager.unban(username);
+    }
+
+    public String isBanned(String username) {
+        return banManager.isBanned(username);
     }
 }
