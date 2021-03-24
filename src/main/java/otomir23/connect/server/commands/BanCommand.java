@@ -4,11 +4,20 @@ import otomir23.connect.server.Server;
 import otomir23.connect.server.User;
 import otomir23.connect.server.util.BanManager;
 
+import java.util.Arrays;
+
 public class BanCommand extends Command {
     @Override
     public void execute(String[] args) {
         User user = Server.getInstance().getUser(args[0]);
-        if (user != null) BanManager.ban(user);
+        String reason = "Banned";
+        if (args.length > 1) {
+            reason = "";
+            for (String s: Arrays.copyOfRange(args, 1, args.length)) {
+                reason += s + " ";
+            }
+        }
+        if (user != null) BanManager.ban(user, reason);
         else throw new CommandException("User not found");
     }
 
