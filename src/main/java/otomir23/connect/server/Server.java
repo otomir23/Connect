@@ -155,41 +155,6 @@ public class Server {
         stop(false);
     }
 
-    private void stop(boolean restarting) {
-        new Thread(() -> {
-            try {
-                LOGGER.debug("stop");
-                Server.restarting = restarting;
-
-                LOGGER.debug("Shutting down connection thread...");
-                connectionHandler.stop();
-                LOGGER.debug("Connection thread is shut down");
-
-                LOGGER.debug("Shutting down all client interaction threads...");
-                for (User c :
-                        users) {
-                    LOGGER.debug("Shutting down " + c.getUsername() + " interaction thread...");
-                    c.thread.stop();
-                }
-                LOGGER.debug("All client interaction threads are shut down");
-
-                LOGGER.debug("Shutting down console input thread...");
-                inputHandler.stop();
-                LOGGER.debug("Console input thread is shut down");
-
-                LOGGER.debug("Closing socket...");
-                serverSocket.close();
-                LOGGER.debug("Socket closed");
-
-                LOGGER.debug("Server stopped successful");
-                LOGGER.log("Server stopped.");
-                running = false;
-            } catch (IOException e) {
-                LOGGER.error(e);
-            }
-        }).start();
-    }
-
     public User getUser(String username) {
         for (User user : users) {
             if (user.getUsername().equals(username)) return user;
@@ -231,5 +196,40 @@ public class Server {
 
     public String isBanned(String username) {
         return banManager.isBanned(username);
+    }
+
+    private void stop(boolean restarting) {
+        new Thread(() -> {
+            try {
+                LOGGER.debug("stop");
+                Server.restarting = restarting;
+
+                LOGGER.debug("Shutting down connection thread...");
+                connectionHandler.stop();
+                LOGGER.debug("Connection thread is shut down");
+
+                LOGGER.debug("Shutting down all client interaction threads...");
+                for (User c :
+                        users) {
+                    LOGGER.debug("Shutting down " + c.getUsername() + " interaction thread...");
+                    c.thread.stop();
+                }
+                LOGGER.debug("All client interaction threads are shut down");
+
+                LOGGER.debug("Shutting down console input thread...");
+                inputHandler.stop();
+                LOGGER.debug("Console input thread is shut down");
+
+                LOGGER.debug("Closing socket...");
+                serverSocket.close();
+                LOGGER.debug("Socket closed");
+
+                LOGGER.debug("Server stopped successful");
+                LOGGER.log("Server stopped.");
+                running = false;
+            } catch (IOException e) {
+                LOGGER.error(e);
+            }
+        }).start();
     }
 }
