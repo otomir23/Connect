@@ -15,7 +15,7 @@ To-do
 - [x] Fix server crash
 - [x] Make server.properties work
 - [ ] Rewrite Client code
-- [ ] Rewrite Server code
+- [x] Rewrite Server code
 - [x] Make client-side packet parsing and response
 - [x] Add ban system
 - [x] Add kick system
