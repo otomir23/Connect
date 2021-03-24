@@ -13,13 +13,13 @@ public class Client {
     public static long pingMills = 0;
 
     public static void main(String[] args) {
-        while (true) {
-            System.out.println("Please enter your username: ");
-            username = new Scanner(System.in).next();
+        System.out.println("Please enter your username: ");
+        username = new Scanner(System.in).next();
+        username.replaceAll(" ", "");
+        username.replaceAll(":", "");
+        username.replaceAll("/", "");
+        username.replaceAll("\\\\", "");
 
-            if (!username.contains(" ") && !username.isEmpty()) break;
-            System.out.println("Invalid username. Please enter valid one.");
-        }
         connect();
     }
 
