@@ -1,7 +1,5 @@
 Connect
 =============
-> Made by otomir23
-
 [![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
 Simple socket application written on Java.
