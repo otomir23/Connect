@@ -4,7 +4,7 @@ Connect
 
 [![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
-Bad socket application (very very bad)
+Simple socket application written on Java.
 
 Information
 ------------
@@ -22,3 +22,6 @@ To-do
 - [ ] Add ban system
 - [x] Add kick system
 - [x] Fix ping calculation
+- [ ] Fix stop/restart command
+- [ ] Rewrite Packet class
+- [ ] Add help command
