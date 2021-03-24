@@ -13,7 +13,7 @@ public class KickCommand extends Command {
         if (args.length > 1) {
             reason = "";
             for (String s: Arrays.copyOfRange(args, 1, args.length)){
-                reason += s;
+                reason += s + " ";
             }
         }
         if (user != null) user.disconnect(reason);
