@@ -13,8 +13,12 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class Server {
-    private volatile static Server instance;
+    /**
+     * Main logger of the server
+     * */
     public final static Logger LOGGER = new Logger("Server");
+
+    private volatile static Server instance;
     private static Thread handler;
     private static volatile boolean running = true;
     private static boolean restarting = true;
@@ -24,6 +28,9 @@ public class Server {
         handler.start();
     }
 
+    /**
+     * @return instance of server
+     * */
     public static Server getInstance() {
         return instance;
     }
@@ -145,16 +152,26 @@ public class Server {
         }
     }
 
+    /**
+     * Restarts the server
+     * */
     public void restart() {
         LOGGER.log("Server is restarting...");
         stop(true);
     }
 
+    /**
+     * Stops the server
+     * */
     public void stop() {
         LOGGER.log("Stopping server...");
         stop(false);
     }
 
+    /**
+     * @return connected user with given nickname nickname
+     * @param username username of user to get
+     * */
     public User getUser(String username) {
         for (User user : users) {
             if (user.getUsername().equals(username)) return user;
@@ -162,6 +179,9 @@ public class Server {
         return null;
     }
 
+    /**
+     * @return list of all connected users
+     * */
     public ArrayList<User> getConnectedUsers() {
         ArrayList<User> userArrayList = new ArrayList<>();
         for (User user: users) {
@@ -170,31 +190,57 @@ public class Server {
         return userArrayList;
     }
 
+    /**
+     * @return list of all users, including users who didn't confirm connection
+     * */
     public ArrayList<User> getAllUsers() {
         return users;
     }
 
+    /**
+     * @return maximum number of users that can be connected to the server on the same time
+     * */
     public int getMaxUsers() {
         return maxConnections;
     }
 
+    /**
+     * @return list of all commands
+     * */
     public ArrayList<Command> getServerCommands() {
         return new ArrayList<>(serverCommands);
     }
 
+    /**
+     * Bans user without a reason
+     * @param user user to ban
+     * */
     public void ban(User user) {
         banManager.ban(user);
     }
 
+    /**
+     * Bans user
+     * @param user user to ban
+     * @param reason reason of ban
+     * */
     public void ban(User user, String reason) {
         banManager.ban(user, reason);
     }
 
+    /**
+     * Unbans user
+     * @param username username of user to unban
+     * */
     public void unban(String username) {
         banManager.unban(username);
     }
 
-    public String isBanned(String username) {
+    /**
+     * @param username username of user to check
+     * @return ban reason or null if user is not banned
+     * */
+    public String getBanReason(String username) {
         return banManager.isBanned(username);
     }
 

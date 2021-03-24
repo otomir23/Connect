@@ -1,14 +1,11 @@
 package otomir23.connect.server.commands;
 
 import otomir23.connect.server.Server;
-import otomir23.connect.server.User;
-
-import java.util.Arrays;
 
 public class UnbanCommand extends Command {
     @Override
     public void execute(String[] args) {
-        if (Server.getInstance().isBanned(args[0]) != null) {
+        if (Server.getInstance().getBanReason(args[0]) != null) {
             Server.getInstance().unban(args[0]);
             Server.LOGGER.log("User " + args[0] + " unbanned.");
         }

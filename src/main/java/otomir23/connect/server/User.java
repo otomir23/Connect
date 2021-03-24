@@ -40,7 +40,7 @@ public class User implements Runnable {
                 if (input.getKey().equals("connection")) {
                     if (!connectionConfirmed) {
                         username = input.getValue();
-                        String banReason = Server.getInstance().isBanned(username);
+                        String banReason = Server.getInstance().getBanReason(username);
                         if (banReason != null) {
                             LOGGER.log(username + " tried to connect, while being banned. Ban reason: " + banReason);
                             disconnect("You are banned. Reason: " + banReason);
