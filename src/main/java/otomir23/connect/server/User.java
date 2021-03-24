@@ -36,7 +36,7 @@ public class User implements Runnable {
             while (scanner.hasNextLine()) {
                 String message = scanner.nextLine();
                 LOGGER.debug("New message: " + message);
-                Packet<String, String> input = parseInput(message);
+                Packet input = Packet.parsePacket(message);
                 if (input.getKey().equals("connection")) {
                     if (!connectionConfirmed) {
                         username = input.getValue();
@@ -49,7 +49,7 @@ public class User implements Runnable {
                     switch (input.getKey()) {
                         case "ping":
                             long ping = System.currentTimeMillis() - Long.parseLong(input.getValue());
-                            sendPacket("pong", String.valueOf(ping));
+                            sendPacket(new Packet("pong", String.valueOf(ping)));
                             break;
                         case "disconnect":
                             disconnect(input.getValue());
@@ -75,7 +75,7 @@ public class User implements Runnable {
     public void disconnect(String reason) {
         try {
             if (!getClientSocket().isClosed()) {
-                sendPacket("disconnect", reason);
+                sendPacket(new Packet("disconnect", reason));
                 getClientSocket().close();
             }
             LOGGER.log(username + " disconnected. Reason: " + reason);
@@ -87,9 +87,8 @@ public class User implements Runnable {
         }
     }
 
-    public void sendPacket(String key, String value) throws IOException {
-        clientSocket.getOutputStream().write((key + ":" + value + "\n").getBytes());
-        clientSocket.getOutputStream().flush();
+    public void sendPacket(Packet packet) throws IOException {
+        packet.send(clientSocket.getOutputStream());
     }
 
     public String getUsername() {
@@ -102,12 +101,5 @@ public class User implements Runnable {
 
     public boolean isConnectionConfirmed() {
         return connectionConfirmed;
-    }
-
-    //private useful methods
-    private static Packet<String, String> parseInput(String input) {
-        String[] inputString = input.split(":");
-        if (inputString.length != 2) throw new IllegalArgumentException("Invalid input string.");
-        return new Packet<>(inputString[0], inputString[1]);
     }
 }

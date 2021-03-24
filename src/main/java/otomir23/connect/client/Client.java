@@ -44,14 +44,14 @@ public class Client {
             socket.connect(target);
             System.out.println("Connected to the server! [" + socket.getLocalPort() + "]");
 
-            sendPacket(socket.getOutputStream(), "connection",  username);
+            new Packet("connection",  username).send(socket.getOutputStream());
             Timer timer = new Timer(true);
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     try {
                         pingMills = System.currentTimeMillis();
-                        sendPacket(socket.getOutputStream(), "ping", String.valueOf(pingMills) );
+                        new Packet("ping", String.valueOf(pingMills) ).send(socket.getOutputStream());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -79,7 +79,7 @@ public class Client {
                     Scanner scanner = new Scanner(socket.getInputStream());
                     while (scanner.hasNextLine()) {
                         String message = scanner.nextLine();
-                        Packet<String, String> input = parseInput(message);
+                        Packet input = Packet.parsePacket(message);
                             switch (input.getKey()) {
                                 case "pong":
                                     long ping = System.currentTimeMillis() - pingMills;
@@ -151,16 +151,5 @@ public class Client {
 
 
         return new InetSocketAddress(IP, port);
-    }
-
-    static void sendPacket(OutputStream out, String key, String value) throws IOException {
-        out.write((key + ":" + value + "\n").getBytes());
-        out.flush();
-    }
-
-    private static Packet<String, String> parseInput(String input) {
-        String[] inputString = input.split(":");
-        if (inputString.length != 2) throw new IllegalArgumentException("Invalid input string.");
-        return new Packet<>(inputString[0], inputString[1]);
     }
 }
