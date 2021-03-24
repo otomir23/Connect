@@ -1,9 +1,6 @@
 package otomir23.connect.server;
 
-import otomir23.connect.server.commands.BanCommand;
-import otomir23.connect.server.commands.Command;
-import otomir23.connect.server.commands.CommandException;
-import otomir23.connect.server.commands.KickCommand;
+import otomir23.connect.server.commands.*;
 import otomir23.connect.server.util.BanManager;
 import otomir23.connect.server.util.Logger;
 import otomir23.connect.server.util.PropertiesManager;
@@ -16,18 +13,38 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class Server {
-    public volatile static Server instance;
+    private volatile static Server instance;
     public final static Logger LOGGER = new Logger("Server");
     private static Thread handler;
     private static volatile boolean running = true;
     private static boolean stopping = true;
-    private final ArrayList<Command> serverCommands = new ArrayList<>();
 
     public static void main(String[] args) {
         handler = new Thread(Server::run);
         handler.start();
     }
 
+    public static Server getInstance() {
+        return instance;
+    }
+
+    private static void run() {
+        while (true) {
+            running = true;
+            instance = new Server();
+            while (running) {
+            }
+            LOGGER.debug("vvv");
+            instance.stop();
+            if (stopping) {
+                System.exit(0);
+            }
+        }
+    }
+
+    private final ArrayList<Command> serverCommands = new ArrayList<>();
+    private final int maxConnections;
+    private final int port;
     private volatile ArrayList<User> users;
     private PropertiesManager properties;
     private ServerSocket serverSocket;
@@ -43,13 +60,15 @@ public class Server {
         LOGGER.debug("DEBUG MODE IS ENABLED");
         String portValue = properties.getProperty("port");
 
-        int port = Integer.parseInt(portValue);
-        int maxConnections = Integer.parseInt(properties.getProperty("max"));
+        port = Integer.parseInt(portValue);
+        maxConnections = Integer.parseInt(properties.getProperty("max"));
 
 
         // COMMANDS
         serverCommands.addAll(Arrays.asList(new BanCommand(),
-                new KickCommand()));
+                new KickCommand(),
+                new HelpCommand(),
+                new ListCommand()));
 
         // SOCKET
         users = new ArrayList<>();
@@ -123,20 +142,6 @@ public class Server {
         }
     }
 
-    private static void run() {
-        while (true) {
-            running = true;
-            instance = new Server();
-            while (running) {
-            }
-            LOGGER.debug("vvv");
-            instance.stop();
-            if (stopping) {
-                System.exit(0);
-            }
-        }
-    }
-
     public void stop() {
         try {
             LOGGER.debug("stop");
@@ -168,7 +173,7 @@ public class Server {
         }
     }
 
-    public void onConsoleCommand(String command, String[] args) {
+    /*public void onConsoleCommand(String command, String[] args) {
         LOGGER.debug(command);
         LOGGER.debug(Arrays.toString(args));
         switch (command) {
@@ -184,7 +189,7 @@ public class Server {
             default:
                 throw new CommandException("");
         }
-    }
+    }*/
 
     public User getUser(String username) {
         for (User user : users) {
@@ -194,6 +199,22 @@ public class Server {
     }
 
     public ArrayList<User> getConnectedUsers() {
+        ArrayList<User> userArrayList = new ArrayList<>();
+        for (User user: users) {
+            if (user.isConnectionConfirmed()) userArrayList.add(user);
+        }
+        return userArrayList;
+    }
+
+    public ArrayList<User> getAllUsers() {
         return users;
+    }
+
+    public int getMaxUsers() {
+        return maxConnections;
+    }
+
+    public ArrayList<Command> getServerCommands() {
+        return new ArrayList<>(serverCommands);
     }
 }

@@ -4,6 +4,7 @@ public abstract class Command {
     public abstract void execute(String[] args);
     public abstract String getName();
     public abstract String[] getAliases();
+    public abstract String getDescription();
     public abstract int getMinArgs();
     public abstract int getMaxArgs();
 }

@@ -81,7 +81,7 @@ public class User implements Runnable {
             LOGGER.log(username + " disconnected. Reason: " + reason);
             thread.stop();
             connectionThread.stop();
-            Server.instance.getConnectedUsers().remove(this);
+            Server.getInstance().getAllUsers().remove(this);
         } catch (IOException ioe) {
             LOGGER.fatal(ioe, -1);
         }

@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class KickCommand extends Command {
     @Override
     public void execute(String[] args) {
-        User user = Server.instance.getUser(args[0]);
+        User user = Server.getInstance().getUser(args[0]);
         String reason = "Kicked";
         if (args.length > 1) {
             reason = "";
@@ -28,6 +28,11 @@ public class KickCommand extends Command {
     @Override
     public String[] getAliases() {
         return new String[0];
+    }
+
+    @Override
+    public String getDescription() {
+        return "Disconnects user from server. User will able to reconnect.";
     }
 
     @Override

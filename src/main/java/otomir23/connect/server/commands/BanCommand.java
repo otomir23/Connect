@@ -7,7 +7,7 @@ import otomir23.connect.server.util.BanManager;
 public class BanCommand extends Command {
     @Override
     public void execute(String[] args) {
-        User user = Server.instance.getUser(args[0]);
+        User user = Server.getInstance().getUser(args[0]);
         if (user != null) BanManager.ban(user);
         else throw new CommandException("User not found");
     }
@@ -20,6 +20,11 @@ public class BanCommand extends Command {
     @Override
     public String[] getAliases() {
         return new String[0];
+    }
+
+    @Override
+    public String getDescription() {
+        return "Disconnects user from server add adds him to blacklist.";
     }
 
     @Override

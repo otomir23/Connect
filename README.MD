@@ -24,4 +24,5 @@ To-do
 - [x] Fix ping calculation
 - [ ] Fix stop/restart command
 - [x] Rewrite Packet class
-- [ ] Add help command
+- [x] Add help command
+- [ ] Saving logs to file
