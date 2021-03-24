@@ -17,7 +17,7 @@ public class Server {
     public final static Logger LOGGER = new Logger("Server");
     private static Thread handler;
     private static volatile boolean running = true;
-    private static boolean stopping = true;
+    private static boolean restarting = true;
 
     public static void main(String[] args) {
         handler = new Thread(Server::run);
@@ -29,14 +29,14 @@ public class Server {
     }
 
     private static void run() {
-        while (true) {
+        while (restarting) {
+            restarting = false;
             running = true;
             instance = new Server();
             while (running) {
             }
             LOGGER.debug("vvv");
-            instance.stop();
-            if (stopping) {
+            if (!restarting) {
                 System.exit(0);
             }
         }
@@ -70,7 +70,9 @@ public class Server {
                 new KickCommand(),
                 new HelpCommand(),
                 new ListCommand(),
-                new UnbanCommand()));
+                new UnbanCommand(),
+                new StopCommand(),
+                new RestartCommand()));
         banManager = new BanManager();
 
         // SOCKET
@@ -96,8 +98,6 @@ public class Server {
                     }
                 }
             });
-
-
 
             inputHandler = new Thread(() -> {
                 Scanner input = new Scanner(System.in);
@@ -145,54 +145,50 @@ public class Server {
         }
     }
 
-    public void stop() {
-        try {
-            LOGGER.debug("stop");
-
-            LOGGER.debug("Shutting down connection thread...");
-            connectionHandler.stop();
-            LOGGER.debug("Connection thread is shut down");
-
-            LOGGER.debug("Shutting down all client interaction threads...");
-            for (User c:
-                    users) {
-                LOGGER.debug("Shutting down " + c.getUsername() + " interaction thread...");
-                c.thread.stop();
-            }
-            LOGGER.debug("All client interaction threads are shut down");
-
-            LOGGER.debug("Shutting down console input thread...");
-            inputHandler.stop();
-            LOGGER.debug("Console input thread is shut down");
-
-            LOGGER.debug("Closing socket...");
-            serverSocket.close();
-            LOGGER.debug("Socket closed");
-
-            LOGGER.debug("Server stopped successful");
-            LOGGER.log("Server stopped.");
-        } catch (IOException e) {
-            LOGGER.error(e);
-        }
+    public void restart() {
+        LOGGER.log("Server is restarting...");
+        stop(true);
     }
 
-    /*public void onConsoleCommand(String command, String[] args) {
-        LOGGER.debug(command);
-        LOGGER.debug(Arrays.toString(args));
-        switch (command) {
-            case "stop":
-                LOGGER.log("Stopping server...");
+    public void stop() {
+        LOGGER.log("Stopping server...");
+        stop(false);
+    }
+
+    private void stop(boolean restarting) {
+        new Thread(() -> {
+            try {
+                LOGGER.debug("stop");
+                Server.restarting = restarting;
+
+                LOGGER.debug("Shutting down connection thread...");
+                connectionHandler.stop();
+                LOGGER.debug("Connection thread is shut down");
+
+                LOGGER.debug("Shutting down all client interaction threads...");
+                for (User c :
+                        users) {
+                    LOGGER.debug("Shutting down " + c.getUsername() + " interaction thread...");
+                    c.thread.stop();
+                }
+                LOGGER.debug("All client interaction threads are shut down");
+
+                LOGGER.debug("Shutting down console input thread...");
+                inputHandler.stop();
+                LOGGER.debug("Console input thread is shut down");
+
+                LOGGER.debug("Closing socket...");
+                serverSocket.close();
+                LOGGER.debug("Socket closed");
+
+                LOGGER.debug("Server stopped successful");
+                LOGGER.log("Server stopped.");
                 running = false;
-                stopping = true;
-                break;
-            case "restart":
-                LOGGER.log("Server is restarting...");
-                running = false;
-                break;
-            default:
-                throw new CommandException("");
-        }
-    }*/
+            } catch (IOException e) {
+                LOGGER.error(e);
+            }
+        }).start();
+    }
 
     public User getUser(String username) {
         for (User user : users) {

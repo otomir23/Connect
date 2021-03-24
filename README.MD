@@ -20,7 +20,7 @@ To-do
 - [x] Add ban system
 - [x] Add kick system
 - [x] Fix ping calculation
-- [ ] Fix stop/restart command
+- [x] Fix stop/restart command
 - [x] Rewrite Packet class
 - [x] Add help command
 - [ ] Saving logs to file
