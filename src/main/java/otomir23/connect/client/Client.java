@@ -59,9 +59,10 @@ public class Client {
             }, 0, PING_RATE * 60 * 1000);
 
             // ========= INPUT THREAD =========
-            new Thread(() -> {
-                while (true) {
-                    if (new Scanner(System.in).next().equals("stop")) {
+            Scanner inputScanner = new Scanner(System.in);
+            Thread inputThread = new Thread(() -> {
+                while (inputScanner.hasNextLine()) {
+                    if (inputScanner.nextLine().equals("disconnect")) {
                         if (!socket.isClosed()) {
                             try {
                                 socket.close();
@@ -69,12 +70,16 @@ public class Client {
                                 e.printStackTrace();
                             }
                         }
+                        break;
+                    } else if (inputScanner.nextLine().equals("stop") || inputScanner.nextLine().equals("exit")) {
+                        System.exit(0);
                     }
                 }
-            }).start();
+            });
+            inputThread.start();
 
             // ========= PACKET THREAD =========
-            new Thread(() -> {
+            Thread packetThread = new Thread(() -> {
                 try {
                     Scanner scanner = new Scanner(socket.getInputStream());
                     while (scanner.hasNextLine()) {
@@ -99,12 +104,30 @@ public class Client {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }).start();
+            }); packetThread.start();
 
             // ========= START =========
             while (!socket.isClosed()) {
 
             }
+
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            inputThread.stop();
+            packetThread.stop();
+            timer.cancel();
+
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            connect();
         } catch (SocketException se) {
             System.err.println("Unable to connect to the server. Maybe IP is invalid, server is down, or you don't have internet connection.");
 
