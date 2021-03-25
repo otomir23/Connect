@@ -23,4 +23,4 @@ To-do
 - [x] Fix stop/restart command
 - [x] Rewrite Packet class
 - [x] Add help command
-- [ ] Saving logs to file
+- [x] Saving logs to file

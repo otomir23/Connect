@@ -59,6 +59,9 @@ public class Server {
     private Thread connectionHandler;
     private Thread inputHandler;
 
+    /**
+     * Default constructor
+     * */
     Server() {
         // PROPERTIES
         properties = new PropertiesManager(new File("./server.properties"));
@@ -110,6 +113,7 @@ public class Server {
                 Scanner input = new Scanner(System.in);
                 while (input.hasNextLine()) {
                     String inputText = input.nextLine();
+                    LOGGER.input(inputText);
                     String[] split = inputText.split(" ");
                     String command = split[0];
                     String[] args = Arrays.copyOfRange(split, 1, split.length);
